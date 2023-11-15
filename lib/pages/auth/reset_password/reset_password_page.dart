@@ -50,6 +50,14 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
             context,
             e as CustomError,
           ),
+          data: (_) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Password reset email has been sent'),
+              ),
+            );
+            GoRouter.of(context).goNamed(RouteNames.signin);
+          },
         );
       },
     );
