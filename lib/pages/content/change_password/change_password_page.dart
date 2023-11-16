@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../models/custom_error.dart';
+import '../../../repositories/auth_repository_provider.dart';
 import '../../../utils/error_dialog.dart';
 import '../../widgets/buttons.dart';
 import '../../widgets/form_fields.dart';
@@ -38,16 +39,25 @@ class _ChangePasswordPageState extends ConsumerState<ChangePasswordPage> {
         );
   }
 
+  void processSuccessCase() async {
+    try {
+      await ref.read(authRepositoryProvider).signout();
+    } on CustomError catch (e) {
+      if (!mounted) return;
+      errorDialog(context, e);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     ref.listen<AsyncValue<void>>(
       changePasswordProvider,
       (previous, next) {
-        next.whenOrNull(
-          error: (e, st) {
-            errorDialog(context, e as CustomError);
-          },
-        );
+        next.whenOrNull(error: (e, st) {
+          errorDialog(context, e as CustomError);
+        }, data: (_) {
+          processSuccessCase();
+        });
       },
     );
 
