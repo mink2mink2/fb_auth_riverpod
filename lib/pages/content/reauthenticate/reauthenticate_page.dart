@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../models/custom_error.dart';
+import '../../../repositories/auth_repository_provider.dart';
+import '../../../utils/error_dialog.dart';
 import '../../widgets/form_fields.dart';
 
 class ReauthenticatePage extends ConsumerStatefulWidget {
@@ -33,6 +36,31 @@ class _ReauthenticatePageState extends ConsumerState<ReauthenticatePage> {
     final form = _formKey.currentState;
 
     if (form == null || !form.validate()) return;
+
+    setState(() {
+      submitting = true;
+    });
+
+    try {
+      final navigator = Navigator.of(context);
+
+      await ref.read(authRepositoryProvider).reauthenticateWithCredential(
+            _emailController.text.trim(),
+            _passwordController.text.trim(),
+          );
+
+      setState(() {
+        submitting = false;
+      });
+
+      navigator.pop('success');
+    } on CustomError catch (e) {
+      setState(() {
+        submitting = false;
+      });
+      if (!mounted) return;
+      errorDialog(context, e);
+    }
   }
 
   @override
