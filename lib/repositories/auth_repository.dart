@@ -12,18 +12,35 @@ class AuthRepository {
     required String password,
   }) async {
     try {
+      fbAuth.setLanguageCode('ko');
+      print('1signup: {$name}, {$email}, {$password}');
       final userCredential = await fbAuth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
-
+      print('2signup: {$name}, {$email}, {$password}');
       final signedInUser = userCredential.user!;
-
+      print('3signup: {$name}, {$email}, {$password}');
       await usersCollection.doc(signedInUser.uid).set({
         'name': name,
         'email': email,
       });
-    } catch (e) {
+      print('4signup: {$name}, {$email}, {$password}');
+    } on FirebaseAuthException catch (e) {
+      // 에러 처리
+      if (e.code == 'weak-password') {
+        print('The password is too weak.');
+      } else if (e.code == 'email-already-in-use') {
+        print('The account already exists for that email.');
+      } else if (e.code == 'invalid-email') {
+        print('The email address is not valid.');
+      } else {
+        print('Error: ${e.message}');
+      }
+    }  catch (e) {
+      print('6signup: {$name}, {$email}, {$password}');
+      print('Error: ${e.toString()}');
+
       throw handleException(e);
     }
   }
